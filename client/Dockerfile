@@ -1,28 +1,18 @@
-# Use an official Node runtime as a parent image
-FROM node:14-slim AS build
-
-# Set the working directory in the container
-WORKDIR /usr/src/app
-
-# Copy the package.json and package-lock.json files to the container
+# Step 1: Build the app
+FROM node:18-alpine AS build-stage
+WORKDIR /app
 COPY package*.json ./
-
-# Install application dependencies
 RUN npm install
-
-# Copy the rest of the application code to the container
 COPY . .
 
-FROM alpine:3.16.7
 
-WORKDIR /app
+ENV NODE_OPTIONS=--openssl-legacy-provider
 
-RUN apk update && apk add npm
+RUN npm run build
 
-COPY --from=build /usr/src/app /app
+# Step 2: Serve the built app with nginx
+FROM nginx:alpine
+COPY --from=build-stage /app/build /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
 
-# Expose the port the app runs on
-EXPOSE 3000
-
-# Define the command to run your app
-CMD ["npm", "start"]
