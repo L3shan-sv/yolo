@@ -1,5 +1,8 @@
 YOLO App Containerization Explanation
 
+This file explains the reasoning behind each containerization step.
+
+
 This file explains how I containerized the YOLO ecommerce app and why I made certain choices. It covers base images, Dockerfiles, networking, volumes, Git workflow, and how I handled running and debugging the app.
 
 1. Base Images
