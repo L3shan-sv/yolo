@@ -14,3 +14,4 @@ Vagrant.configure("2") do |config|
     ansible.playbook = "playbook.yml"
   end
 end
+# Vagrantfile provisioning YOLO environment via Ansible
