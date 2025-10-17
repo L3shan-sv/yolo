@@ -52,4 +52,5 @@ Run Order
 1. Start Docker
 2. Run docker-compose up -d
 3. Run vagrant up --provision
-4. Access app at http://localhost:3000
+4. Access app at http://localhost:3000,
+fgh
