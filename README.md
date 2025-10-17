@@ -48,3 +48,8 @@ test the backend on :curl http://localhost:5000/api/products- checks the items a
 
 
 
+Run Order
+1. Start Docker
+2. Run docker-compose up -d
+3. Run vagrant up --provision
+4. Access app at http://localhost:3000
