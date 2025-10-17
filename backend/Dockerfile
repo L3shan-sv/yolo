@@ -27,3 +27,4 @@ EXPOSE 5000
 
 # Define the command to run your app
 CMD ["node", "server.js"]
+# Backend Dockerfile for YOLO app (Node.js + Express)
