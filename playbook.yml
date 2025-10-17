@@ -54,4 +54,4 @@
       command: docker compose up -d
       args:
         chdir: /opt/yolo/
-# fixing of broken urls
+# fixing of broken urls and links
