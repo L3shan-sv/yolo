@@ -1,55 +1,49 @@
-# docker-compose.yml
-# Docker Compose configuration for YOLO app (React frontend + Node backend + MongoDB)
+
+# Custom Docker Compose for YOLO APP built by leshan froms scratch
+# Includes React frontend, Node backend, and MongoDB with persistent volume
 
 services:
-  # Frontend service
-  brian-yolo-client:
+  yolo-client:
     build: ./client
-    image: brianbwire/brian-yolo-client:v1.0.0
-    container_name: brian-yolo-client
+    image: l3shan/yolo-client:v1.1.0
+    container_name: yolo-client
     ports:
-      - "3000:80"   # host 3000 maps to nginx port 80
+      - "3000:80"
     stdin_open: true
     tty: true
     depends_on:
-      - brian-yolo-backend
+      - yolo-backend
     networks:
-      - app-net
+      - yolo-net
 
-  # Backend service
-  brian-yolo-backend:
+  yolo-backend:
     build: ./backend
-    image: brianbwire/brian-yolo-backend:v1.0.0
-    container_name: brian-yolo-backend
+    image: l3shan/yolo-backend:v1.1.0
+    container_name: yolo-backend
     ports:
       - "5000:5000"
-    stdin_open: true
-    tty: true
     restart: always
     depends_on:
-      - app-mongo
+      - yolo-mongo
     networks:
-      - app-net
+      - yolo-net
     environment:
-      - MONGODB_URI=mongodb://app-mongo:27017/yolomy
+      - MONGODB_URI=mongodb://yolo-mongo:27017/yolomy
 
-  # MongoDB service
-  app-mongo:
+  yolo-mongo:
     image: mongo:6.0
-    container_name: app-mongo
+    container_name: yolo-mongo
     ports:
       - "27017:27017"
     networks:
-      - app-net
+      - yolo-net
     volumes:
-      - app-mongo-data:/data/db
+      - yolo-mongo-data:/data/db
 
-# Docker network
 networks:
-  app-net:
+  yolo-net:
     driver: bridge
 
-# Docker volumes
 volumes:
-  app-mongo-data:
+  yolo-mongo-data:
     driver: local
