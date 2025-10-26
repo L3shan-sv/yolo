@@ -1,56 +1,109 @@
-# Overview
-This project involved the containerization and deployment of a full-stack yolo application using Docker.
+YOLO E-Commerce Platform
 
-A full-stack containerized app built with React, Node.js, and MongoDB.
-# Requirements
-Install the docker engine here:
-- [Docker](https://docs.docker.com/engine/install/) 
+A fully containerized e-commerce app built to demonstrate modern full-stack development and Docker-based deployment. YOLO lets users view and add products through a React frontend, with a Node.js/Express backend and MongoDB for storage. Every component is containerized to ensure consistency, portability, and persistence.
 
-## How to launch the application 
+T
+Overview
 
-
-![Alt text](image.png)
-
-## How to run the app
-Use vagrant up --provison command
+YOLO is an e-commerce platform showcasing how to containerize a full-stack application. The frontend is built with React, styled with Tailwind CSS, and the backend is Node.js with Express and Mongoose connecting to MongoDB. The project demonstrates Docker best practices, including multi-stage builds, minimal images, networking, and volume persistence.
 
 Features
-- Add, view, edit, and delete products.
-- Persistent product storage using MongoDB.
-- Fully containerized frontend, backend, and database.
 
-REQUIREMENTS
-- [Docker](https://docs.docker.com/engine/install/)
-- [Vagrant](https://www.vagrantup.com/)
+View products and add new products via the frontend
 
-HOW TO SET UP
+Data persistence using MongoDB volumes
 
-1. CLONE THIS REPO
-```bash
-git clone https://github.com/L3shan-sv/yolo.git
-cd <repo-directory>
+Multi-container setup with Docker Compose
 
-2. LAUNCHING VAGRANT WITH PROVISIONING
-First shh into the server- run " vagrant ssh"
-run " sudo docker ps -a "- this lists all the containers running
-remove all running containers by running " sudo docker rm -f $(sudo docker ps -aq)
+Frontend production build served by Nginx
 
-3. START PROVISIONING VM
-Run " vagrant up -- provision"
- Verify the running containers by running- "docker ps"
-expected containers are : (app-mongo → MongoDB
-brian-yolo-backend → Node.js API
-brian-yolo-client → React frontend)
+Minimal, optimized images to reduce storage overhead
 
-4. Acces
-Test the fronted on :http://localhost:3000
-test the backend on :curl http://localhost:5000/api/products- checks the items added through the frontend you should lots of items called leshan
+Tech Stack
+
+Frontend: React, Tailwind CSS
+
+Backend: Node.js, Express
+
+Database: MongoDB
+
+Containerization: Docker, Docker Compose
+
+Docker & Containerization
+Base Images
+
+Frontend: node:18-alpine (lightweight, production-ready Node.js)
+
+Backend: node:18-alpine (minimal Node.js environment)
+
+Frontend Production Server: nginx:alpine (fast, tiny image)
+
+Database: mongo:6.0 (official MongoDB image)
+
+Multi-Stage Builds
+
+Frontend uses a multi-stage build:
+
+Stage 1: Build React app with Node.js
+
+Stage 2: Serve production build with Nginx, keeping final image small (~83MB)
+
+Docker Compose
+
+Networking: Frontend, backend, and database connected on a custom bridge network
+
+Volumes: MongoDB volume ensures product data persists across container restarts
+
+Port Mapping:
+
+Frontend: 3000
+
+Backend: 5000
+
+MongoDB: 27017
+
+Running the Project
+
+Clone the repository:
+
+git clone <https://github.com/L3shan-sv/yolo.git>
+cd yolo
 
 
+Build and start containers:
 
-Run Order
-1. Start Docker
-2. Run docker-compose up -d
-3. Run vagrant up --provision
-4. Access app at http://localhost:3000,
-fgh
+docker compose up --build
+
+
+Access the app:
+
+Frontend: http://localhost:3000
+
+Backend API: http://localhost:5000/api/products
+
+Add products via frontend and verify persistence via MongoDB volume.
+
+Screenshots
+
+(In the screenshot Directory)
+
+Docker Hub Images
+Image	Tag	Size
+leshan/yolo-client	latest	83.3MB
+leshan/yolo-backend	latest	280MB
+
+Images were optimized using Alpine base images and minimal packages to keep them lightweight.
+
+Implementation Notes
+
+Minimalist Approach: Using Alpine images and multi-stage builds reduced image sizes (frontend ~83MB, backend ~280MB).
+
+Persistence: MongoDB stores product data in a Docker volume to survive container restarts.
+
+Networking: Custom bridge network ensures frontend can talk to backend and database seamlessly.
+
+Build Practices: Used npm ci --only=production for cleaner production installs.
+
+Git Workflow: Feature branches were used for Docker setup, merged to main after testing.
+
+Debugging: Resolved ERR_OSSL_EVP_UNSUPPORTED by using node:18-alpine and setting NODE_OPTIONS=--openssl-legacy-provider for frontend build.
