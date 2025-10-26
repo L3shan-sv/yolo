@@ -9,7 +9,7 @@ const upload = multer();
 const productRoute = require('./routes/api/productRoute');
 
 // MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://app-mongo:27017/yolomy';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://yolo-mongo:27017/yolomy';
 
 mongoose.connect(MONGODB_URI, {
     useNewUrlParser: true,
