@@ -1,116 +1,127 @@
-YOLO App Containerization Explanation
+Explanation of Dockerization for YOLO E-commerce App
+1. Choice of Base Images
 
-This file explains the reasoning behind each containerization step.
+For our containers, we chose minimalist base images to keep the final images small and efficient:
 
+Frontend: node:18-alpine for building the React app and nginx:alpine to serve the production build. Alpine images are lightweight and have minimal packages installed by default.
 
-This file explains how I containerized the YOLO ecommerce app and why I made certain choices. It covers base images, Dockerfiles, networking, volumes, Git workflow, and how I handled running and debugging the app.
+Backend: node:18-alpine was used to run the Express server. Its small size and compatibility with Node.js make it ideal for production environments.
 
-1. Base Images
+Database: mongo:6.0 provides an official, stable MongoDB image suitable for local and production testing.
 
-Backend: node:16-alpine
+Using lightweight base images ensures our containers stay below the recommended size limits while including only essential dependencies.
 
-Frontend: node:16-alpine
+2. Dockerfile Directives
 
-Database: mongo:6.0
+We structured our Dockerfiles following best practices:
 
-Why these?
-Alpine Node.js images are small and fast, which makes builds quicker. Using the official Mongo image keeps things stable and predictable. Basically, I wanted lightweight, official, and easy to use images for all services.
+Frontend Dockerfile:
 
-2. Dockerfiles
+WORKDIR /app – sets the working directory.
 
-For frontend and backend, I used a similar structure:
+COPY package*.json ./ & npm ci --only=production – installs only production dependencies for a smaller build.
 
-FROM → pick the base image
+COPY . . – copies source code into the container.
 
-WORKDIR /app → sets the working folder inside the container
+RUN npm run build – builds the React app for production.
 
-COPY package*.json ./ → copy dependency files first
+FROM nginx:alpine stage – serves the built React app.
 
-RUN npm install → install dependencies
+Backend Dockerfile:
 
-COPY . . → copy the rest of the code
+WORKDIR /app – sets working directory.
 
-EXPOSE <port> → note which port the app listens on
+COPY package*.json ./ & npm ci --only=production – installs backend dependencies efficiently.
 
-CMD ["npm", "start"] → start the app
+COPY . . – adds server files.
 
-Why this way?
-Copying dependencies first and installing them separately makes rebuilding faster. Only rebuilds the code if dependencies haven’t changed, which is convenient.
+CMD ["node", "server.js"] – runs the Express server on container start.
 
-3. Networking with Docker Compose
+This multi-stage build approach ensures we don’t ship unnecessary development files in the production images.
 
-Docker Compose creates a bridge network automatically.
+3. Docker-Compose Networking
 
-Services talk to each other over this network.
+We used Docker Compose to orchestrate the frontend, backend, and database containers:
 
-Ports mapped to host:
+Containers communicate over the default bridge network created by Docker Compose.
 
-Frontend: 3000:80
+Ports mapping:
 
-Backend: 5000:5000
+Frontend: 3000 → 80 (Nginx)
 
-Mongo: 27017:27017
+Backend: 5000 → 5000
 
-Why?
-It keeps things secure inside the network and only exposes what’s needed to the host. Frontend talks to backend, backend talks to Mongo, all inside the network.
+MongoDB: 27017 → internal only (not exposed externally for security)
 
-4. Volumes
+This allows seamless communication between containers while keeping external exposure limited.
 
-MongoDB uses a volume:
+4. Docker-Compose Volumes
+
+Persistence was essential for our database:
+
+We defined a volume for MongoDB:
 
 volumes:
-  mongo-data:
-    driver: local
+  - mongo-data:/data/db
 
 
-Mounted at /data/configdb
+This ensures that all products added through the frontend persist even if containers are restarted.
 
-Why?
-This keeps the data even if the container gets removed. So all the products you add stay there and don’t vanish when you rebuild the containers.
+Volumes were only used where necessary to maintain a minimalist image design.
 
 5. Git Workflow
 
-Forked the repo and cloned locally.
+Our workflow for this project:
 
-Made changes in small commits with descriptive messages.
+Branching: Created a feature branch for Dockerization.
 
-Used feature branches for big changes, merged into main after testing.
+Commits: Incrementally committed Dockerfile, docker-compose, and config changes.
 
-Why?
-Keeps history clean and easy to follow. Makes collaboration and debugging simpler.
+Pull Requests: Reviewed locally, tested builds with docker compose up --build.
 
-6. Running & Debugging
+Merge: Merged into main branch after confirming all containers run correctly.
 
-Start everything with:
+This workflow ensures reproducibility and clean version control.
 
-vagrant up --provision
+6. Running and Debugging
 
+Startup command:
 
-If containers fail (like duplicate names), I remove the old ones:
-
-docker rm -f <container_id>
+docker compose up --build
 
 
-Checked logs with:
+Verified container connectivity:
 
-docker logs <container_name>
+Accessed frontend at http://localhost:3000
 
+Verified backend at http://localhost:5000/api/products
 
-Verified connectivity with curl or by opening the app in the browser.
+Checked database persistence via Mongo shell inside the container.
 
-Why?
-Doing it step by step ensures nothing breaks silently and helps identify what went wrong fast.
+Debugging measures applied:
 
-7. Good Practices
+Resolved Node.js crypto errors (ERR_OSSL_EVP_UNSUPPORTED) by using Node 18 Alpine and rebuilding images.
 
-Image tags:
+Ensured MongoDB hostname matched service name in Docker Compose.
 
-Backend: brianbwire/brian-yolo-backend:v1.0.0
+7. Image Naming and Tagging
 
-Frontend: brianbwire/brian-yolo-client:v1.0.0
+We followed clear naming and tagging standards for easy identification:
 
-Makes it easy to know which version you’re running, roll back if needed, and keep DockerHub organized.
+Frontend: leshan/yolo-client:latest
 
-8. DockerHub Screenshot
+Backend: leshan/yolo-backend:latest
 
-Screenshot well provided in the screenshot directory
+MongoDB: official image, versioned mongo:6.0
+
+This allows anyone cloning the repo to pull images consistently from Docker Hub.
+
+8. Screenshots
+
+Screenshots of images on Docker Hub, showing sizes and tags, are included to demonstrate:
+
+Image size compliance (frontend < 100MB, backend < 300MB)
+
+Correct versioning and tags
+
+These confirm our adherence to minimalism and best practices.
