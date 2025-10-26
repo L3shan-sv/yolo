@@ -2,7 +2,7 @@ YOLO E-Commerce Platform
 
 A fully containerized e-commerce app built to demonstrate modern full-stack development and Docker-based deployment. YOLO lets users view and add products through a React frontend, with a Node.js/Express backend and MongoDB for storage. Every component is containerized to ensure consistency, portability, and persistence.
 
-T
+
 Overview
 
 YOLO is an e-commerce platform showcasing how to containerize a full-stack application. The frontend is built with React, styled with Tailwind CSS, and the backend is Node.js with Express and Mongoose connecting to MongoDB. The project demonstrates Docker best practices, including multi-stage builds, minimal images, networking, and volume persistence.
