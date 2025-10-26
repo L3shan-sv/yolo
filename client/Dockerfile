@@ -1,19 +1,28 @@
-# Step 1: Build the app
-FROM node:18-alpine AS build-stage
+# ---- Build Stage ----
+FROM node:18-alpine AS builder
+
 WORKDIR /app
+
+# Copy package files
 COPY package*.json ./
-RUN npm install
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy source
 COPY . .
 
 
 ENV NODE_OPTIONS=--openssl-legacy-provider
 
+# Build the app
 RUN npm run build
 
-# Step 2: Serve the built app with nginx
+# ---- Production Stage ----
 FROM nginx:alpine
-COPY --from=build-stage /app/build /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
 
-# changing base image
+COPY --from=builder /app/build /usr/share/nginx/html
+
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
