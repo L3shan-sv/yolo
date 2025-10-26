@@ -1,49 +1,25 @@
-
-# Custom Docker Compose for YOLO APP built by leshan froms scratch
-# Includes React frontend, Node backend, and MongoDB with persistent volume
-
+version: '3.9'
 services:
-  yolo-client:
+  frontend:
     build: ./client
-    image: l3shan/yolo-client:v1.1.0
-    container_name: yolo-client
     ports:
       - "3000:80"
-    stdin_open: true
-    tty: true
     depends_on:
-      - yolo-backend
-    networks:
-      - yolo-net
+      - backend
 
-  yolo-backend:
+  backend:
     build: ./backend
-    image: l3shan/yolo-backend:v1.1.0
-    container_name: yolo-backend
     ports:
       - "5000:5000"
-    restart: always
-    depends_on:
-      - yolo-mongo
-    networks:
-      - yolo-net
     environment:
-      - MONGODB_URI=mongodb://yolo-mongo:27017/yolomy
+      - MONGODB_URI=mongodb://mongo:27017/yolomy
+    depends_on:
+      - mongo
 
-  yolo-mongo:
+  mongo:
     image: mongo:6.0
-    container_name: yolo-mongo
-    ports:
-      - "27017:27017"
-    networks:
-      - yolo-net
     volumes:
-      - yolo-mongo-data:/data/db
-
-networks:
-  yolo-net:
-    driver: bridge
+      - mongo-data:/data/db
 
 volumes:
-  yolo-mongo-data:
-    driver: local
+  mongo-data:
