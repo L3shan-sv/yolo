@@ -1,0 +1,13 @@
+- name: Pull frontend Docker image
+  community.docker.docker_image:
+    name: l3shan/yolo-frontend:v1.2.0
+    source: pull
+
+- name: Run frontend container
+  community.docker.docker_container:
+    name: yolo-frontend
+    image: l3shan/yolo-frontend:v1.2.0
+    state: started
+    restart: yes
+    published_ports:
+      - "3000:80"
