@@ -1,0 +1,15 @@
+- name: Pull backend Docker image
+  community.docker.docker_image:
+    name: l3shan/yolo-backend:v1.2.0
+    source: pull
+
+- name: Run backend container
+  community.docker.docker_container:
+    name: yolo-backend
+    image: l3shan/yolo-backend:v1.2.0
+    state: started
+    restart: yes
+    published_ports:
+      - "5000:5000"
+    env:
+      MONGO_URI: "mongodb://yolo-mongodb:27017"
