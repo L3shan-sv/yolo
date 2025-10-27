@@ -1,0 +1,37 @@
+---
+- name: Install prerequisites
+  apt:
+    name: 
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
+    state: present
+    update_cache: yes
+  tags: docker
+
+- name: Add Docker GPG key
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /usr/share/keyrings/docker-archive-keyring.gpg
+  tags: docker
+
+- name: Add Docker repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu focal stable"
+    state: present
+  tags: docker
+
+- name: Install Docker Engine
+  apt:
+    name: docker-ce
+    state: present
+    update_cache: yes
+  tags: docker
+
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+  tags: docker
