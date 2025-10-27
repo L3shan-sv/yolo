@@ -1,0 +1,15 @@
+# Global variables
+backend_image: l3shan/yolo-backend:v1.2.0
+frontend_image: l3shan/yolo-frontend:v1.2.0
+mongo_image: mongo:6.0
+
+mongo_container: yolo-mongodb
+backend_container: yolo-backend
+frontend_container: yolo-frontend
+
+mongo_port: "27017:27017"
+backend_port: "5000:5000"
+frontend_port: "3000:80"
+
+github_repo: "https://github.com/your-username/your-yolo-ecommerce-repo.git"
+app_dir: "/home/vagrant/yolo-app"
