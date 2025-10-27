@@ -1,0 +1,42 @@
+No- name: Set up YOLO e-commerce platform
+  hosts: localhost
+  become: yes
+  vars_files:
+    - roles/vars/main.yml
+
+  pre_tasks:
+    - name: Include common tasks
+      import_role:
+        name: common
+      tags:
+        - common
+
+  roles:
+    - role: docker
+      tags: docker
+
+    - block:
+        - name: Pull MongoDB image and run container
+          import_role:
+            name: mongodb
+      tags:
+        - mongodb
+
+    - block:
+        - name: Clone backend repo and run backend container
+          git:
+            repo: "{{ github_repo }}"
+            dest: "{{ app_dir }}"
+            update: yes
+
+        - import_role:
+            name: backend
+      tags:
+        - backend
+
+    - block:
+        - name: Run frontend container
+          import_role:
+            name: frontend
+      tags:
+        - frontend
