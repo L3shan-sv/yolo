@@ -1,0 +1,14 @@
+- name: Create MongoDB volume
+  community.docker.docker_volume:
+    name: mongo_data
+
+- name: Run MongoDB container
+  community.docker.docker_container:
+    name: yolo-mongodb
+    image: mongo:6.0
+    state: started
+    restart: yes
+    published_ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
