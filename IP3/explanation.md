@@ -174,4 +174,4 @@ sudo docker restart yolo-frontend
 Run only certain steps
 Use tags to skip unnecessary steps:
 
-ansible-playbook -i inventory.ini playbook.yml --tags frontend
+ansible-playbook -i inventory.ini playbook.yml --tags frontend,
