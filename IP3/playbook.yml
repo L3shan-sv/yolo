@@ -1,4 +1,4 @@
-No- name: Set up YOLO e-commerce platform
+- name: Set up YOLO e-commerce platform
   hosts: localhost
   become: yes
   vars_files:
