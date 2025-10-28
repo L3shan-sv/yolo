@@ -1,7 +1,16 @@
+---
 - name: Pull backend Docker image
   community.docker.docker_image:
     name: l3shan/yolo-backend:v1.2.0
     source: pull
+
+- name: Wait for MongoDB to be ready
+  wait_for:
+    host: yolo-mongodb
+    port: 27017
+    delay: 5          # wait 5 seconds before starting checks
+    timeout: 60       # wait up to 60 seconds
+  delegate_to: localhost
 
 - name: Run backend container
   community.docker.docker_container:
@@ -13,3 +22,5 @@
       - "5000:5000"
     env:
       MONGO_URI: "mongodb://yolo-mongodb:27017"
+    networks:
+      - name: yolo-network
