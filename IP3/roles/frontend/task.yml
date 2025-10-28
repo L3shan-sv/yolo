@@ -1,16 +1,16 @@
----
 - name: Pull frontend Docker image
   community.docker.docker_image:
-    name: l3shan/yolo-frontend:v1.2.0
+    name: "{{ frontend_image }}"
     source: pull
+    tag: v1.2.0
 
 - name: Run frontend container
   community.docker.docker_container:
     name: yolo-frontend
-    image: l3shan/yolo-frontend:v1.2.0
+    image: "{{ frontend_image }}"
     state: started
     restart: yes
     published_ports:
-      - "3000:80"
+      - "80:80"   # container port 80 → VM port 80
     networks:
       - name: yolo-network
