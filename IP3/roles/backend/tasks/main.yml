@@ -1,0 +1,50 @@
+---
+# roles/backend/tasks/main.yml
+
+- name: Ensure Docker network exists
+  community.docker.docker_network:
+    name: yolo-network
+    state: present
+  tags: backend, network
+
+- name: Pull backend Docker image
+  community.docker.docker_image:
+    name: l3shan/yolo-backend:v1.2.0
+    source: pull
+  tags: backend, image
+
+- name: Ensure MongoDB container is running
+  community.docker.docker_container:
+    name: yolo-mongodb
+    image: mongo:6.0
+    state: started
+    restart: yes
+    published_ports:
+      - "27017:27017"
+    networks:
+      - name: yolo-network
+  tags: backend, mongo
+
+- name: Wait until MongoDB container is running
+  community.docker.docker_container_info:
+    name: yolo-mongodb
+  register: mongo_info
+  retries: 12
+  delay: 5
+  until: mongo_info.containers is defined and mongo_info.containers | length > 0 and mongo_info.containers[0].State.Status == "running"
+  failed_when: false
+  tags: backend, wait
+
+- name: Run backend container
+  community.docker.docker_container:
+    name: yolo-backend
+    image: l3shan/yolo-backend:v1.2.0
+    state: started
+    restart: yes
+    published_ports:
+      - "5000:5000"
+    env:
+      MONGO_URI: "mongodb://yolo-mongodb:27017"
+    networks:
+      - name: yolo-network
+  tags: backend, run
