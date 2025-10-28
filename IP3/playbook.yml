@@ -6,22 +6,18 @@
     - roles/vars/main.yml
 
   pre_tasks:
-    - name: Include common setup tasks
-      import_role:
-        name: common
-      tags:
-        - common
-
     - name: Add GitHub to known_hosts
       known_hosts:
         name: github.com
-        key: "{{ lookup('pipe', 'ssh-keyscan github.com') }}"
+        key: "{{ lookup('pipe','ssh-keyscan github.com') }}"
         path: /home/vagrant/.ssh/known_hosts
+      tags: pre_setup
 
     - name: Remove old backend folder if it exists
       file:
         path: "{{ app_dir }}/backend"
         state: absent
+      tags: pre_setup
 
     - name: Clone backend repo
       git:
@@ -32,8 +28,7 @@
         update: yes
       environment:
         GIT_SSH_COMMAND: "ssh -i /home/vagrant/.ssh/id_ed25519 -o StrictHostKeyChecking=no"
-      tags:
-        - backend
+      tags: backend
 
   roles:
     - role: docker
