@@ -1,14 +1,13 @@
 ---
 - name: Install prerequisites
   apt:
-    name: "{{ item }}"
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - software-properties-common
     state: present
     update_cache: yes
-  loop:
-    - apt-transport-https
-    - ca-certificates
-    - curl
-    - software-properties-common
 
 - name: Add Docker GPG key
   apt_key:
@@ -34,5 +33,5 @@
 
 - name: Create Docker network
   community.docker.docker_network:
-    name: yolo-network
+    name: "{{ docker_network }}"
     state: present
