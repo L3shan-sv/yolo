@@ -11,5 +11,6 @@ mongo_port: "27017:27017"
 backend_port: "5000:5000"
 frontend_port: "3000:80"
 
-github_repo: "https://github.com/your-username/your-yolo-ecommerce-repo.git"
+github_repo: "git@github.com:L3shan-sv/yolo.git"
 app_dir: "/home/vagrant/yolo-app"
+backend_version: "master"
