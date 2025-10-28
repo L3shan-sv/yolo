@@ -1,3 +1,4 @@
+---
 - name: Pull frontend Docker image
   community.docker.docker_image:
     name: l3shan/yolo-frontend:v1.2.0
@@ -11,3 +12,5 @@
     restart: yes
     published_ports:
       - "3000:80"
+    networks:
+      - name: yolo-network
