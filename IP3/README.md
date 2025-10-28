@@ -83,9 +83,9 @@ Step 5: Access the Application
 
 Open your browser:
 
-Frontend: http://localhost:3000
+Frontend: http://localhost:8081
 
-Backend (API): http://localhost:5000
+Backend (API): http://localhost:5000/products
 
 You should see the YOLO e-commerce dashboard up and running. Add products through the frontend form and watch them appear in real-time.
 
@@ -98,7 +98,7 @@ yolo/
 │   ├─ backend/          # Handles backend Docker container
 │   └─ common/           # Common tasks (Docker installation, updates)
 ├─ id_rsa                # SSH private key for GitHub (optional)
-└─ README.md             # You are here 😎
+└─ README.md             # You are here 
 
 Troubleshooting
 
