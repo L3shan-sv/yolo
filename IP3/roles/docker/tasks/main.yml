@@ -1,37 +1,38 @@
 ---
 - name: Install prerequisites
   apt:
-    name: 
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - software-properties-common
+    name: "{{ item }}"
     state: present
     update_cache: yes
-  tags: docker
+  loop:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - software-properties-common
 
 - name: Add Docker GPG key
-  ansible.builtin.get_url:
+  apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
-    dest: /usr/share/keyrings/docker-archive-keyring.gpg
-  tags: docker
+    state: present
 
 - name: Add Docker repository
-  ansible.builtin.apt_repository:
-    repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu focal stable"
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
     state: present
-  tags: docker
 
 - name: Install Docker Engine
   apt:
     name: docker-ce
     state: present
     update_cache: yes
-  tags: docker
 
 - name: Ensure Docker service is running
   service:
     name: docker
     state: started
     enabled: yes
-  tags: docker
+
+- name: Create Docker network
+  community.docker.docker_network:
+    name: yolo-network
+    state: present
