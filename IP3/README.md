@@ -131,6 +131,5 @@ You can extend the playbook to include more roles or services in the future (lik
 Author
 
 Leshan Alan.
- Below is a screenshot of the playbook running and the containers running on vagrant
- ![alt text](<Screenshot 2025-10-28 at 4.24.34 pm.png>)
- ![alt text](<Screenshot 2025-10-27 at 5.55.45 pm.png>)
+ Below is a screenshot of the playbook running and the containers running on vagrant Found in the screenshot directory
+ 
