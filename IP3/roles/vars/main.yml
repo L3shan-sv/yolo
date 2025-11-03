@@ -1,12 +1,21 @@
-app_dir: /vagrant
-github_repo: git@github.com:L3shan-sv/yolo.git
+- name: Build frontend Docker image
+  community.docker.docker_image:
+    name: "{{ frontend_image_name }}"
+    build:
+      path: "{{ frontend_path }}"
+    state: present
+  tags:
+    - frontend
 
-backend_image: l3shan/yolo-backend:v1.2.0
-frontend_image: l3shan/yolo-frontend:v1.2.0
-mongo_image: mongo:6.0
-
-docker_network: yolo-network
-
-mongo_port: 27017
-backend_port: 5000
-frontend_port: 3000
+- name: Run frontend container
+  community.docker.docker_container:
+    name: "{{ frontend_container_name }}"
+    image: "{{ frontend_image_name }}"
+    state: started
+    restart_policy: always
+    published_ports:
+      - "{{ frontend_port }}:80"   # Nginx serves on 80 inside container
+    networks:
+      - name: "{{ network_name }}"
+  tags:
+    - frontend
