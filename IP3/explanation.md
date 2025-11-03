@@ -1,177 +1,132 @@
-YOLO E-Commerce Platform - Explanation of Ansible Playbook
+# YOLO E-Commerce Platform - Explanation & Design Decisions
+
+This document explains the architecture, implementation, project structure, and rationale behind the technical choices for the YOLO e-commerce platform.
 
-This document explains the setup, commands, and tags used in your YOLO e-commerce Ansible deployment. Think of it as your “behind-the-scenes” guide to what’s happening when you run the playbook.
+---
 
-Overview
+## **1. Project Overview**
 
-The goal of this playbook is to automate the deployment of the YOLO e-commerce platform inside a Vagrant Ubuntu VM using Docker.
+YOLO is a modular, containerized e-commerce application that allows users to browse products, add items to a cart, and make purchases. Admins can manage products. The platform is designed for **scalability, maintainability, and rapid deployment**.
 
-The playbook does the following:
+---
 
-Updates Ubuntu packages.
+## **2. Project Structure**
 
-Installs required packages like curl and apt-transport-https.
+yolo-ecommerce/
+├── backend/
+│ ├── Dockerfile # Builds backend container
+│ ├── package.json # Node.js dependencies
+│ ├── server.js # Backend entry point
+│ ├── routes/ # API routes
+│ │ ├── authRoutes.js
+│ │ ├── productRoutes.js
+│ │ └── orderRoutes.js
+│ ├── models/ # MongoDB schemas
+│ │ ├── User.js
+│ │ ├── Product.js
+│ │ └── Order.js
+│ ├── controllers/ # Business logic
+│ │ ├── authController.js
+│ │ ├── productController.js
+│ │ └── orderController.js
+│ ├── middleware/ # Auth & error handling
+│ └── .env # Environment variables
+├── ansible/
+│ └── playbook.yml # Deployment automation
+├── screenshots/ # Playbook & containers images
+├── README.md # Project overview & usage
+└── EXPLANATION.md # Architecture & rationale
 
-Installs Docker.
+markdown
+Copy code
 
-Sets up Docker containers for MongoDB, backend, and frontend.
+**Rationale for Structure:**
 
-Uses roles, tags, and blocks for clean, maintainable automation.
+- **backend/** contains backend code with clear separation:  
+  - `routes/` → API endpoints  
+  - `controllers/` → Business logic  
+  - `models/` → Database schemas  
+  - `middleware/` → Authentication and error handling  
+- **ansible/** automates deployment  
+- **screenshots/** visually documents setup  
+- **Dockerfile** ensures consistent backend environment  
+- **.env** keeps sensitive configuration separate  
 
-Playbook Structure
-playbook.yml          # Main playbook
-inventory.ini         # Hosts definition (localhost)
-roles/
-├─ common/            # Docker installation & system setup
-├─ backend/           # Backend container tasks
-└─ frontend/          # Frontend container tasks
+---
 
+## **3. Tech Stack & Why**
 
-Each role handles a specific part of the deployment:
+| Layer        | Technology           | Rationale |
+|--------------|-------------------|-----------|
+| Frontend     | React.js (`localhost:3030`) | Component-based, reusable UI, dynamic interface |
+| Backend      | Node.js + Express (`localhost:5000`) | Efficient async API handling, flexible routing |
+| Database     | MongoDB            | Flexible schema, JSON-friendly, scalable |
+| Containerization | Docker          | Reproducible and isolated environment |
+| Automation   | Ansible            | Repeatable deployment, reduces human error |
 
-common: Updates the system, installs Docker, ensures the Docker service is running.
+---
 
-backend: Pulls the backend Docker image and runs the container.
+## **4. Architecture & Design Decisions**
 
-frontend: Pulls the frontend Docker image and runs the container.
+- **Container Separation:** Backend and MongoDB in different containers  
+  - Decouples services for easier scaling, updates, and maintenance
+- **Docker Network (`yolo_app-net`):** Isolated communication between backend and database
+- **Environment Variables:** Keep secrets out of code, configurable per environment
+- **REST API:** Standardized interface, compatible with multiple clients
 
-MongoDB: Runs MongoDB in its own container with a persistent volume.
+---
 
-Key Commands and Tags
+## **5. Key Implementation Choices**
 
-Ansible provides a way to control which tasks run using tags. This is useful if you don’t want to run the full playbook every time.
+1. **Dockerized Backend**  
+   - Isolated Node.js environment, reproducible setup  
+   - Supports scaling and CI/CD pipelines
 
-Running the full playbook
-ansible-playbook -i inventory.ini playbook.yml --ask-become-pass
+2. **MongoDB Container**  
+   - Self-contained database  
+   - Easy to backup, migrate, or replace
 
+3. **Ansible Automation**  
+   - Automates container builds, network setup, and env config  
+   - Screenshots of playbook show successful deployment:
 
--i inventory.ini specifies the host (localhost in this case).
+   ![Playbook Screenshot](./screenshots/playbook-run.png)  
+   *Demonstrates that all containers were successfully built, network created, and environment variables applied.*
 
---ask-become-pass asks for the sudo password to run tasks that require elevated privileges.
+4. **Running Containers**  
 
-Running specific tags
+   ![Containers Screenshot](./screenshots/docker-containers.png)  
+   *Shows backend and MongoDB containers running on `yolo_app-net`, with backend accessible on port 5000 and frontend on 3030.*
 
-The playbook has tags for major steps:
+5. **Folder Organization**  
+   - Clean separation improves maintainability and scalability
 
-setup → System and Docker setup
+---
 
-backend → Pull & run backend container
+## **6. How It Works Together**
 
-frontend → Pull & run frontend container
+1. Start **MongoDB container** on `yolo_app-net`  
+2. Start **Backend container** pointing to MongoDB via `MONGO_URI`  
+3. Backend exposes REST API at `localhost:5000`  
+4. **Frontend** (React) runs on `localhost:3030` and interacts with API  
+5. All data (users, products, orders) persists in MongoDB container
 
-mongo → Create MongoDB volume and run MongoDB container
+---
 
-Example: Run only backend tasks:
+## **7. Future-Proofing & Considerations**
 
-ansible-playbook -i inventory.ini playbook.yml --tags backend --ask-become-pass
+- **Scalability:** Add more backend containers if traffic increases  
+- **Security:** Network isolation, secrets in `.env`  
+- **Extensibility:** Frontend container or CI/CD pipeline can be added  
+- **Portability:** Docker ensures consistent behavior anywhere
 
+---
 
-Example: Run setup tasks:
+## **8. Summary of Decisions**
 
-ansible-playbook -i inventory.ini playbook.yml --tags setup --ask-become-pass
-
-
-Example: Run everything except MongoDB:
-
-ansible-playbook -i inventory.ini playbook.yml --skip-tags mongo --ask-become-pass
-
-Step-by-Step Task Explanation
-1. Gathering Facts
-- name: Gathering Facts
-  hosts: all
-  tasks:
-    - setup:
-
-
-Collects information about the target VM (OS, IP, memory, etc.).
-
-Required for conditional tasks later.
-
-2. Update apt cache (setup tag)
-- name: Update apt cache
-  apt:
-    update_cache: yes
-
-
-Ensures the VM’s package index is up-to-date.
-
-Avoids errors when installing packages.
-
-3. Install required packages (setup tag)
-- name: Install required packages
-  apt:
-    name:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - software-properties-common
-    state: present
-
-
-Installs packages needed to add repositories and download software securely.
-
-4. Docker installation (setup tag)
-- name: Add Docker GPG key
-- name: Add Docker repository
-- name: Install Docker
-- name: Ensure Docker service is running
-
-
-Adds Docker’s official GPG key.
-
-Adds Docker repository for Ubuntu.
-
-Installs Docker CE.
-
-Starts and enables Docker service.
-
-5. MongoDB container (mongo tag)
-- name: Create MongoDB volume
-- name: Run MongoDB container
-
-
-Creates a Docker volume for persistent MongoDB storage.
-
-Runs MongoDB container with the volume mounted.
-
-6. Backend container (backend tag)
-- name: Pull backend Docker image
-- name: Run backend container
-
-
-Pulls the backend image from Docker Hub.
-
-Runs the container, exposing the API port (default 5000).
-
-7. Frontend container (frontend tag)
-- name: Pull frontend Docker image
-- name: Run frontend container
-
-
-Pulls the frontend image from Docker Hub.
-
-Runs the container, mapping the web server port (default 3000).
-
-Troubleshooting Tips
-
-Docker permission denied
-Use sudo docker ps instead of just docker ps inside the VM.
-
-Playbook fails at cloning GitHub repo
-
-GitHub removed password authentication.
-
-Use SSH keys or skip the Git clone task if the repo is already present.
-
-Containers not showing updates
-
-Ensure you restart the container after rebuilding the image:
-
-sudo docker restart yolo-backend
-sudo docker restart yolo-frontend
-
-
-Run only certain steps
-Use tags to skip unnecessary steps:
-
-ansible-playbook -i inventory.ini playbook.yml --tags frontend,
+- **Tech stack:** Selected for speed, scalability, and relevance  
+- **Containerization:** Provides reproducibility, isolation  
+- **Automation with Ansible:** Reduces errors, standardizes deployment  
+- **Environment variables:** Secure and flexible configuration  
+- **Project structure:** Maintains clean separation of concerns  
+- **Screenshots:** Provides visual proof of successful deployment and running container ( found in the screenshot directory)
