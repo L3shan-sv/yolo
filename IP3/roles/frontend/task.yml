@@ -1,21 +1,18 @@
 - name: Build frontend Docker image
   community.docker.docker_image:
-    name: "{{ frontend_container_name }}"
+    name: "{{ frontend_image }}"
     build:
-      path: "{{ app_dir }}/frontend"
-    state: present
-  tags:
-    - frontend
+      path: "{{ frontend_path }}"
+    source: build
 
 - name: Run frontend container
   community.docker.docker_container:
-    name: "{{ frontend_container_name }}"
-    image: "{{ frontend_container_name }}"
+    name: "{{ frontend_container }}"
+    image: "{{ frontend_image }}"
     state: started
-    restart_policy: always
-    published_ports:
-      - "{{ frontend_port }}:80"   # map host port to Nginx container port 80
+    restart_policy: unless-stopped
     networks:
       - name: "{{ docker_network_name }}"
-  tags:
-    - frontend
+    published_ports:
+      - "3000:80"  # assuming Nginx serves frontend on 80
+      
