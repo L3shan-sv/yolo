@@ -1,21 +1,23 @@
-- name: Build frontend Docker image
-  community.docker.docker_image:
-    name: "{{ frontend_image_name }}"
-    build:
-      path: "{{ frontend_path }}"
-    state: present
-  tags:
-    - frontend
+# Application paths & repo
+app_dir: "/vagrant"
+github_repo: "git@github.com:L3shan-sv/yolo.git"
 
-- name: Run frontend container
-  community.docker.docker_container:
-    name: "{{ frontend_container_name }}"
-    image: "{{ frontend_image_name }}"
-    state: started
-    restart_policy: always
-    published_ports:
-      - "{{ frontend_port }}:80"   # Nginx serves on 80 inside container
-    networks:
-      - name: "{{ network_name }}"
-  tags:
-    - frontend
+# Docker network
+network_name: "yolo_app-net"
+
+# Backend
+backend_image: "yolo-backend:latest"
+backend_container: "yolo-backend"
+backend_path: "{{ app_dir }}/yolo/backend"
+backend_port: 5000
+
+# Frontend
+frontend_image: "yolo-frontend:latest"
+frontend_container: "yolo-frontend"
+frontend_path: "{{ app_dir }}/yolo/frontend"
+frontend_port: 3000  # Nginx inside container serves on 80
+
+# MongoDB
+mongodb_image: "mongo:6"
+mongodb_container: "yolo-mongo"
+mongodb_port: 27017
