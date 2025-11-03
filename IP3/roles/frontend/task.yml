@@ -1,16 +1,21 @@
-- name: Pull frontend Docker image
+- name: Build frontend Docker image
   community.docker.docker_image:
-    name: "{{ frontend_image }}"
-    source: pull
-    tag: v1.2.0
+    name: "{{ frontend_container_name }}"
+    build:
+      path: "{{ app_dir }}/frontend"
+    state: present
+  tags:
+    - frontend
 
 - name: Run frontend container
   community.docker.docker_container:
-    name: yolo-frontend
-    image: "{{ frontend_image }}"
+    name: "{{ frontend_container_name }}"
+    image: "{{ frontend_container_name }}"
     state: started
-    restart: yes
+    restart_policy: always
     published_ports:
-      - "80:80"   # container port 80 → VM port 80
+      - "{{ frontend_port }}:80"   # map host port to Nginx container port 80
     networks:
-      - name: yolo-network
+      - name: "{{ docker_network_name }}"
+  tags:
+    - frontend
