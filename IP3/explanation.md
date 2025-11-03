@@ -129,4 +129,4 @@ Copy code
 - **Automation with Ansible:** Reduces errors, standardizes deployment  
 - **Environment variables:** Secure and flexible configuration  
 - **Project structure:** Maintains clean separation of concerns  
-- **Screenshots:** Provides visual proof of successful deployment and running container ( found in the screenshot directory)
+- **Screenshots:** Provides visual proof of successful deployment and running container ( found in the screenshot directory).
