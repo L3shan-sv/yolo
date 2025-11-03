@@ -1,20 +1,10 @@
-- name: Pull MongoDB Docker image
-  community.docker.docker_image:
-    name: "{{ mongo_image }}"
-    source: pull
-
 - name: Run MongoDB container
   community.docker.docker_container:
-    name: yolo-mongodb
-    image: "{{ mongo_image }}"
+    name: "{{ mongodb_container_name }}"
+    image: mongo:6.0
     state: started
-    restart: yes
+    restart_policy: always
     published_ports:
-      - "{{ mongo_port }}:27017"
+      - "{{ mongodb_port }}:27017"
     networks:
-      - name: "{{ docker_network }}"
-    healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - name: "{{ docker_network_name }}"
