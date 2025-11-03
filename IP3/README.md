@@ -1,135 +1,125 @@
-YOLO E-Commerce Platform - Ansible & Docker Deployment
+# YOLO E-Commerce Platform
 
-Welcome to YOLO, your personal e-commerce dashboard built to quickly manage retail products. This repository contains the automation setup that provisions a virtual machine, installs dependencies, and runs the application inside Docker containers using Ansible.
+![YOLO Logo](https://img.shields.io/badge/YOLO-E-Commerce-red) ![Docker](https://img.shields.io/badge/Docker-Container-blue) ![Node.js](https://img.shields.io/badge/Node.js-Backend-green) ![MongoDB](https://img.shields.io/badge/MongoDB-Database-brightgreen)
 
-Think of this as a “click-and-go” deployment—you don’t need to manually install anything beyond Vagrant and Ansible.
+YOLO is a full-stack, containerized e-commerce platform that allows users to browse products, add items to a cart, and make purchases. Admins can manage products. The platform is designed for **scalability, maintainability, and easy deployment**.
 
-Features
+---
 
-Full-stack web application (Frontend + Backend)
+## **Table of Contents**
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Setup & Installation](#setup--installation)
+- [Usage](#usage)
+- [Docker & Deployment](#docker--deployment)
+- [Screenshots](#screenshots)
+- [Contributing](#contributing)
+- [License](#license)
 
- Dockerized setup for easy deployment
+---
 
- MongoDB database running in a container
+## **Features**
+- User registration and authentication
+- Product browsing and search
+- Add to cart and checkout functionality
+- Admin interface for product management
+- Containerized backend for easy deployment
+- MongoDB database
+- Automated deployment via Ansible
 
- Add, view, and manage products from the frontend
+---
 
- Fully automated environment provisioning with Ansible
+## **Tech Stack**
+- **Frontend:** React.js (`localhost:3030`)
+- **Backend:** Node.js + Express (`localhost:5000`)
+- **Database:** MongoDB
+- **Containerization:** Docker
+- **Automation:** Ansible
 
-Prerequisites
+---
 
-Before you start, make sure you have the following installed on your machine:
+## **Project Structure**
+yolo-ecommerce/
+├── backend/
+│ ├── Dockerfile # Builds backend container
+│ ├── package.json # Node.js dependencies
+│ ├── server.js # Backend entry point
+│ ├── routes/ # API routes
+│ │ ├── authRoutes.js
+│ │ ├── productRoutes.js
+│ │ └── orderRoutes.js
+│ ├── models/ # MongoDB schemas
+│ │ ├── User.js
+│ │ ├── Product.js
+│ │ └── Order.js
+│ ├── controllers/ # Business logic
+│ │ ├── authController.js
+│ │ ├── productController.js
+│ │ └── orderController.js
+│ ├── middleware/ # Auth & error handling
+│ └── .env # Environment variables
+├── ansible/
+│ └── playbook.yml # Deployment automation
+├── README.md # Project overview & usage
+└── EXPLANATION.md # Architecture & rationale
 
-Vagrant (https://www.vagrantup.com/
-)
+yaml
+Copy code
 
-VirtualBox (https://www.virtualbox.org/
-)
+---
 
-Ansible (version ≥ 2.13 recommended)
+## **Setup & Installation**
 
-Internet connection (to pull Docker images and GitHub repo)
+### Prerequisites
+- Docker & Docker Compose
+- Node.js & npm
+- Ansible (for automation)
 
-Optional (if cloning via SSH):
+### Clone the repo
+```bash
+git clone https://github.com/yourusername/yolo-ecommerce.git
+cd yolo-ecommerce
+Environment Variables
+Create a .env file in the backend directory:
 
-GitHub SSH key set up and added to your account
+env
+Copy code
+MONGO_URI=mongodb://yolo-mongo-1:27017/yolo
+PORT=5000
+JWT_SECRET=your_secret_key
+Docker & Deployment
+Build & Run Backend
+bash
+Copy code
+# Build backend image
+docker build -t yolo-backend ./backend
 
-Private key copied to the project folder (/vagrant/id_rsa)
+# Create a custom network
+docker network create yolo_app-net
 
-Getting Started
-Step 1: Clone the project
-git clone https://github.com/l3shan-sv/yolo.git
-cd yolo
+# Run MongoDB container
+docker run -d --name yolo-mongo-1 --network yolo_app-net mongo:latest
 
-Step 2: Start the Vagrant VM
-vagrant up
+# Run Backend container
+docker run -d --name yolo-backend-1 \
+  --network yolo_app-net \
+  -p 5000:5000 \
+  -e MONGO_URI="mongodb://yolo-mongo-1:27017/yolo" \
+  yolo-backend
+Run via Ansible
+bash
+Copy code
+ansible-playbook -i localhost, playbook.yml -c local --ask-become-pass
+Usage
+Frontend: Visit http://localhost:3030 in your browser.
 
+Backend API: http://localhost:5000 for endpoints (Postman or frontend interacts here)
 
-This will:
+Admin routes require authentication.
 
-Boot up a fresh Ubuntu VM.
+Screenshots
+1. Playbook Run
 
-Set up networking and port forwarding.
-
-Share your project folder with the VM.
-
-Step 3: SSH into the VM
-vagrant ssh
-cd /vagrant
-
-Step 4: Run the Ansible Playbook
-ansible-playbook -i inventory.ini playbook.yml --ask-become-pass
-
-
-This playbook will:
-
-Update Ubuntu packages.
-
-Install Docker and required dependencies.
-
-Set up MongoDB container with persistent volume.
-
-Pull backend and frontend Docker images.
-
-Run the containers with correct ports.
-
-Ports used:
-
-Frontend: localhost:3000
-
-Backend: localhost:5000
-
-Step 5: Access the Application
-
-Open your browser:
-
-Frontend: http://localhost:8081
-
-Backend (API): http://localhost:5000/products
-
-You should see the YOLO e-commerce dashboard up and running. Add products through the frontend form and watch them appear in real-time.
-
-Project Structure
-yolo/
-├─ inventory.ini         # Ansible inventory for localhost
-├─ playbook.yml          # Main Ansible playbook
-├─ roles/
-│   ├─ frontend/         # Handles frontend Docker container
-│   ├─ backend/          # Handles backend Docker container
-│   └─ common/           # Common tasks (Docker installation, updates)
-├─ id_rsa                # SSH private key for GitHub (optional)
-└─ README.md             # You are here 
-
-Troubleshooting
-
-Docker permission issues:
-Use sudo docker ps to check running containers. If you get a permission denied error, prefix commands with sudo.
-
-Frontend or backend not showing up:
-Check if containers are running:
-
-sudo docker ps
-
-
-Restart containers if needed:
-
-sudo docker restart yolo-frontend
-sudo docker restart yolo-backend
-
-
-Git clone fails with HTTPS:
-Make sure you have your SSH key configured and the playbook is using git@github.com:l3shan-sv/yolo.git.
-
-Notes
-
-The playbook is designed to run fully automated once SSH keys are in place.
-
-Using Docker ensures that the environment is consistent across machines.
-
-You can extend the playbook to include more roles or services in the future (like Redis, Nginx, etc.).
-
-Author
-
-Leshan Alan.
- Below is a screenshot of the playbook running and the containers running on vagrant Found in the screenshot directory
- 
+2. Running Containers
+( screenshots are found in the screenshot directory)
