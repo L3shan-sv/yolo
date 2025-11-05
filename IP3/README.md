@@ -107,7 +107,7 @@ Backend accessible at http://localhost:5000
 
 Product data persists across container restarts.
 
-Screenshots:
+Screenshots:(   IN THE PICTURES DIRECTORY)
 
 screenshots/docker_ps.png → shows all containers running.
 
