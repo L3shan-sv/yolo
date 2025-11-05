@@ -1,125 +1,169 @@
-# YOLO E-Commerce Platform
+YOLO E-Commerce Platform
+Project Overview
 
-![YOLO Logo](https://img.shields.io/badge/YOLO-E-Commerce-red) ![Docker](https://img.shields.io/badge/Docker-Container-blue) ![Node.js](https://img.shields.io/badge/Node.js-Backend-green) ![MongoDB](https://img.shields.io/badge/MongoDB-Database-brightgreen)
+YOLO is a fully containerized e-commerce platform that demonstrates modern DevOps practices, including:
 
-YOLO is a full-stack, containerized e-commerce platform that allows users to browse products, add items to a cart, and make purchases. Admins can manage products. The platform is designed for **scalability, maintainability, and easy deployment**.
+Microservice architecture (frontend, backend, database).
 
----
+Containerization with Docker.
 
-## **Table of Contents**
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Setup & Installation](#setup--installation)
-- [Usage](#usage)
-- [Docker & Deployment](#docker--deployment)
-- [Screenshots](#screenshots)
-- [Contributing](#contributing)
-- [License](#license)
+Infrastructure provisioning and orchestration with Vagrant and Ansible.
 
----
+Persistent storage for product data.
 
-## **Features**
-- User registration and authentication
-- Product browsing and search
-- Add to cart and checkout functionality
-- Admin interface for product management
-- Containerized backend for easy deployment
-- MongoDB database
-- Automated deployment via Ansible
+Seamless setup for development and testing.
 
----
+This project has two stages:
 
-## **Tech Stack**
-- **Frontend:** React.js (`localhost:3030`)
-- **Backend:** Node.js + Express (`localhost:5000`)
-- **Database:** MongoDB
-- **Containerization:** Docker
-- **Automation:** Ansible
+Stage 1 (IP2): Using Docker Compose to run containers locally.
 
----
+Stage 2 (IP3): Using Vagrant and Ansible playbooks to provision a virtual machine, orchestrate containers, and run the platform in a reproducible environment.
 
-## **Project Structure**
-yolo-ecommerce/
-├── backend/
-│ ├── Dockerfile # Builds backend container
-│ ├── package.json # Node.js dependencies
-│ ├── server.js # Backend entry point
-│ ├── routes/ # API routes
-│ │ ├── authRoutes.js
-│ │ ├── productRoutes.js
-│ │ └── orderRoutes.js
-│ ├── models/ # MongoDB schemas
-│ │ ├── User.js
-│ │ ├── Product.js
-│ │ └── Order.js
-│ ├── controllers/ # Business logic
-│ │ ├── authController.js
-│ │ ├── productController.js
-│ │ └── orderController.js
-│ ├── middleware/ # Auth & error handling
-│ └── .env # Environment variables
-├── ansible/
-│ └── playbook.yml # Deployment automation
-├── README.md # Project overview & usage
-└── EXPLANATION.md # Architecture & rationale
+Getting Started
+Stage 1 – Docker Compose (IP2)
 
-yaml
-Copy code
+Navigate to the IP2 directory.
 
----
+Run:
 
-## **Setup & Installation**
+sudo docker-compose up --build
 
-### Prerequisites
-- Docker & Docker Compose
-- Node.js & npm
-- Ansible (for automation)
 
-### Clone the repo
-```bash
-git clone https://github.com/yourusername/yolo-ecommerce.git
-cd yolo-ecommerce
-Environment Variables
-Create a .env file in the backend directory:
+Access the frontend at http://localhost:3000
+.
 
-env
-Copy code
-MONGO_URI=mongodb://yolo-mongo-1:27017/yolo
-PORT=5000
-JWT_SECRET=your_secret_key
-Docker & Deployment
-Build & Run Backend
-bash
-Copy code
-# Build backend image
-docker build -t yolo-backend ./backend
+The backend runs at http://localhost:5000
+.
 
-# Create a custom network
-docker network create yolo_app-net
+Product data is persisted, ensuring durability across container restarts.
 
-# Run MongoDB container
-docker run -d --name yolo-mongo-1 --network yolo_app-net mongo:latest
+Stage 2 – Vagrant & Ansible (IP3)
 
-# Run Backend container
-docker run -d --name yolo-backend-1 \
-  --network yolo_app-net \
-  -p 5000:5000 \
-  -e MONGO_URI="mongodb://yolo-mongo-1:27017/yolo" \
-  yolo-backend
-Run via Ansible
-bash
-Copy code
+Navigate to the IP3 directory:
+
+cd IP3
+
+
+Start the virtual machine:
+
+vagrant up
+
+
+(Optional) Run the Ansible playbook manually:
+
 ansible-playbook -i localhost, playbook.yml -c local --ask-become-pass
-Usage
-Frontend: Visit http://localhost:3030 in your browser.
 
-Backend API: http://localhost:5000 for endpoints (Postman or frontend interacts here)
 
-Admin routes require authentication.
+Access the frontend at http://localhost:3030
+.
 
-Screenshots
-1. Playbook Run
+Backend is connected to the database with persistent storage.
 
-2. Running Containers
-( screenshots are found in the screenshot directory)
+All services are orchestrated via Docker, ensuring smooth communication between containers.
+
+Project Structure
+IP2/
+ ├─ docker-compose.yml
+ ├─ backend/
+ ├─ frontend/
+ └─ README.md
+
+IP3/
+ ├─ Vagrantfile
+ ├─ playbook.yml
+ ├─ roles/
+ │   ├─ backend/
+ │   ├─ frontend/
+ │   └─ database/
+ ├─ README.md
+ └─ explanation.md
+
+
+backend/: Node.js backend service with Express, MongoDB connection, and API routes.
+
+frontend/: React frontend consuming backend APIs.
+
+roles/: Ansible roles for each component, executed sequentially in the playbook.
+
+playbook.yml: Orchestrates container setup, service deployment, and database initialization.
+
+Demo / Expected Output
+Stage 1 – Docker Compose
+
+Run:
+
+sudo docker-compose up --build
+
+
+Expected outcomes:
+
+Containers start successfully (frontend, backend, MongoDB).
+
+Frontend accessible at http://localhost:3000
+.
+
+Backend accessible at http://localhost:5000
+.
+
+Product data persists across container restarts.
+
+Screenshots:
+
+screenshots/docker_ps.png → shows all containers running.
+
+screenshots/frontend_running.png → frontend loaded successfully.
+
+screenshots/backend_logs.png → backend logs showing DB connection success.
+
+Stage 2 – Vagrant & Ansible
+
+Start VM and provision:
+
+vagrant up
+
+
+Optional manual playbook run:
+
+ansible-playbook -i localhost, playbook.yml -c local --ask-become-pass
+
+
+Expected outcomes:
+
+VM provisions successfully (screenshots/vagrant_up.png).
+
+Ansible playbook runs all roles in order, configuring Docker, backend, frontend, and database (screenshots/ansible_execution.png).
+
+Frontend accessible at http://localhost:3030
+.
+
+Backend connected to MongoDB with persistent storage.
+
+All containers running concurrently and orchestrated via Docker (screenshots/docker_ps.png).
+
+Persistence Verification
+
+Products added through the frontend remain after container restarts.
+
+Confirms proper orchestration and persistent storage.
+
+Git Workflow
+
+Minimum 10 commits describing step-by-step project evolution.
+
+Well-documented README.md and explanation.md in both stages.
+
+Clean folder structure with ignored sensitive files (e.g., Terraform state backups).
+
+Conclusion
+
+This project demonstrates:
+
+Successful containerization of microservices.
+
+Proper orchestration using Docker and Ansible.
+
+Persistent storage and connectivity between backend and database.
+
+Reproducible setups across local and VM environments.
+
+Screenshots are provided in the screenshots/ directory for reference.
