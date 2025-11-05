@@ -1,132 +1,155 @@
-# YOLO E-Commerce Platform - Explanation & Design Decisions
+Project Overview
 
-This document explains the architecture, implementation, project structure, and rationale behind the technical choices for the YOLO e-commerce platform.
+This project demonstrates a complete DevOps pipeline for setting up and orchestrating a containerized e-commerce platform (“YOLO E-commerce”) across two stages of automation.
 
----
+Stage 1 (IP2) focuses on Docker-based containerization and local orchestration.
 
-## **1. Project Overview**
+Stage 2 (IP3) transitions to a fully automated provisioning and configuration process using Vagrant and Ansible, achieving infrastructure-as-code (IaC) and service orchestration principles.
 
-YOLO is a modular, containerized e-commerce application that allows users to browse products, add items to a cart, and make purchases. Admins can manage products. The platform is designed for **scalability, maintainability, and rapid deployment**.
+All relevant screenshots for proof of execution are available in the screenshots/ directory for reference.
 
----
+Stage 1 — Docker & Local Orchestration
+Objective
 
-## **2. Project Structure**
+To containerize and locally orchestrate the YOLO E-commerce application using Docker Compose.
 
-yolo-ecommerce/
-├── backend/
-│ ├── Dockerfile # Builds backend container
-│ ├── package.json # Node.js dependencies
-│ ├── server.js # Backend entry point
-│ ├── routes/ # API routes
-│ │ ├── authRoutes.js
-│ │ ├── productRoutes.js
-│ │ └── orderRoutes.js
-│ ├── models/ # MongoDB schemas
-│ │ ├── User.js
-│ │ ├── Product.js
-│ │ └── Order.js
-│ ├── controllers/ # Business logic
-│ │ ├── authController.js
-│ │ ├── productController.js
-│ │ └── orderController.js
-│ ├── middleware/ # Auth & error handling
-│ └── .env # Environment variables
-├── ansible/
-│ └── playbook.yml # Deployment automation
-├── screenshots/ # Playbook & containers images
-├── README.md # Project overview & usage
-└── EXPLANATION.md # Architecture & rationale
+Implementation
 
-markdown
-Copy code
+In this stage, each major service (frontend, backend, and database) was defined as an independent microservice within the docker-compose.yml file.
+The containers were networked together using Docker’s internal bridge network to ensure seamless communication between services.
 
-**Rationale for Structure:**
+Frontend was exposed on port 3000
 
-- **backend/** contains backend code with clear separation:  
-  - `routes/` → API endpoints  
-  - `controllers/` → Business logic  
-  - `models/` → Database schemas  
-  - `middleware/` → Authentication and error handling  
-- **ansible/** automates deployment  
-- **screenshots/** visually documents setup  
-- **Dockerfile** ensures consistent backend environment  
-- **.env** keeps sensitive configuration separate  
+Backend was exposed on port 5000
 
----
+Database (PostgreSQL) ran internally on port 5432
 
-## **3. Tech Stack & Why**
+Persistent data was achieved through Docker volumes, ensuring product data remained intact even when containers were stopped or rebuilt.
 
-| Layer        | Technology           | Rationale |
-|--------------|-------------------|-----------|
-| Frontend     | React.js (`localhost:3030`) | Component-based, reusable UI, dynamic interface |
-| Backend      | Node.js + Express (`localhost:5000`) | Efficient async API handling, flexible routing |
-| Database     | MongoDB            | Flexible schema, JSON-friendly, scalable |
-| Containerization | Docker          | Reproducible and isolated environment |
-| Automation   | Ansible            | Repeatable deployment, reduces human error |
+Running the Application
 
----
+To launch the services, the following command was used:
 
-## **4. Architecture & Design Decisions**
+sudo docker-compose up --build
 
-- **Container Separation:** Backend and MongoDB in different containers  
-  - Decouples services for easier scaling, updates, and maintenance
-- **Docker Network (`yolo_app-net`):** Isolated communication between backend and database
-- **Environment Variables:** Keep secrets out of code, configurable per environment
-- **REST API:** Standardized interface, compatible with multiple clients
 
----
+This command built all services from their respective Dockerfiles and started the entire stack in the correct dependency order.
 
-## **5. Key Implementation Choices**
+Verification of Orchestration
 
-1. **Dockerized Backend**  
-   - Isolated Node.js environment, reproducible setup  
-   - Supports scaling and CI/CD pipelines
+Once all services were successfully launched, the frontend became accessible at:
 
-2. **MongoDB Container**  
-   - Self-contained database  
-   - Easy to backup, migrate, or replace
+http://localhost:3000
 
-3. **Ansible Automation**  
-   - Automates container builds, network setup, and env config  
-   - Screenshots of playbook show successful deployment:
 
-   ![Playbook Screenshot](./screenshots/playbook-run.png)  
-   *Demonstrates that all containers were successfully built, network created, and environment variables applied.*
+A screenshot of the running frontend and backend logs is available in the screenshots/ folder (frontend_running.png, backend_logs.png) showing successful orchestration of all components.
 
-4. **Running Containers**  
+Stage 2 — Vagrant & Ansible Automation
+Objective
 
-   ![Containers Screenshot](./screenshots/docker-containers.png)  
-   *Shows backend and MongoDB containers running on `yolo_app-net`, with backend accessible on port 5000 and frontend on 3030.*
+To extend Stage 1 by automating environment provisioning and service setup using Vagrant and Ansible. This stage showcases Infrastructure as Code (IaC) and full service orchestration capabilities.
 
-5. **Folder Organization**  
-   - Clean separation improves maintainability and scalability
+Implementation Breakdown
 
----
+Vagrant Provisioning
 
-## **6. How It Works Together**
+The Vagrantfile provisions a virtual machine based on Ubuntu Focal (20.04).
 
-1. Start **MongoDB container** on `yolo_app-net`  
-2. Start **Backend container** pointing to MongoDB via `MONGO_URI`  
-3. Backend exposes REST API at `localhost:5000`  
-4. **Frontend** (React) runs on `localhost:3030` and interacts with API  
-5. All data (users, products, orders) persists in MongoDB container
+Shared folders were mounted to enable easy syncing between the host and VM.
 
----
+Once the VM was launched, Ansible was automatically provisioned to run playbooks against it.
 
-## **7. Future-Proofing & Considerations**
+vagrant up
 
-- **Scalability:** Add more backend containers if traffic increases  
-- **Security:** Network isolation, secrets in `.env`  
-- **Extensibility:** Frontend container or CI/CD pipeline can be added  
-- **Portability:** Docker ensures consistent behavior anywhere
 
----
+Ansible Configuration
 
-## **8. Summary of Decisions**
+The ansible/playbook.yml file handles the automation of:
 
-- **Tech stack:** Selected for speed, scalability, and relevance  
-- **Containerization:** Provides reproducibility, isolation  
-- **Automation with Ansible:** Reduces errors, standardizes deployment  
-- **Environment variables:** Secure and flexible configuration  
-- **Project structure:** Maintains clean separation of concerns  
-- **Screenshots:** Provides visual proof of successful deployment and running container ( found in the screenshot directory).
+Installing Docker and Docker Compose
+
+Setting up environment variables
+
+Pulling and building container images
+
+Running the entire application stack automatically
+
+The Ansible playbook is modularized using roles, promoting reusability and clean structure:
+
+roles/docker/ — Handles Docker installation
+
+roles/backend/ — Deploys the backend container
+
+roles/frontend/ — Deploys the frontend container
+
+roles/database/ — Configures PostgreSQL and initializes data
+
+Execution Command
+
+To run the playbook manually (if needed), the following command was used:
+
+ansible-playbook -i localhost, playbook.yml -c local --ask-become-pass
+
+Verification of Orchestration
+
+The Ansible logs and backend container logs (available in the screenshots/ folder) show each step being executed — from package installation to container launch.
+Successful orchestration is confirmed when the frontend is accessible at:
+
+http://localhost:3030
+
+
+This confirms that the entire infrastructure — from VM provisioning to service deployment — is handled automatically through a single command, fulfilling the orchestration requirement.
+
+Best Practices Implemented
+
+Consistent use of variables in Ansible roles for portability and maintainability.
+
+Separation of concerns between roles (frontend, backend, and database).
+
+Infrastructure as Code principles through declarative automation.
+
+Persistent storage configuration ensuring continuity of data.
+
+All sensitive files (e.g., environment variables) were properly ignored via .gitignore for security.
+
+Reflection & Design Choices
+
+Containerization was chosen for its scalability and portability, allowing each service to run in isolation while remaining interconnected.
+
+Ansible was used to automate configuration tasks, reducing manual effort and potential for error.
+
+Vagrant provided a consistent environment for testing and deploying the application on any machine.
+
+Using roles improved maintainability, as tasks for each service were logically separated.
+
+Using variables ensured configuration flexibility across environments.
+
+Proof of Orchestration
+
+Refer to the following screenshots for visual evidence:( PRESENT IN THE PICTURES DIRECTORY)
+
+screenshots/vagrant_up.png – Successful Vagrant provisioning
+
+screenshots/ansible_execution.png – Successful playbook execution
+
+screenshots/backend_logs.png – Backend container logs showing successful startup
+
+screenshots/frontend_running.png – Application running at localhost:3030
+
+screenshots/docker_ps.png – All containers running concurrently
+
+These outputs collectively prove successful orchestration of the YOLO E-commerce system — the application runs automatically through infrastructure provisioning and configuration management tools.
+
+Conclusion
+
+Through both stages, this project demonstrates:
+
+Understanding of containerization and microservice architecture
+
+Application of automation tools (Docker, Vagrant, Ansible) for real-world DevOps workflows
+
+Use of best practices such as roles, variables, and persistent data management
+
+Successful orchestration and deployment of a multi-service application
+
+This marks a fully functional and production-ready deployment workflow illustrating the core principles of DevOps, automation, and service orchestration.
