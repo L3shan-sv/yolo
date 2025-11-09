@@ -165,5 +165,3 @@ Proper orchestration using Docker and Ansible.
 Persistent storage and connectivity between backend and database.
 
 Reproducible setups across local and VM environments.
-
-Screenshots are provided in the screenshots/ directory for reference.
