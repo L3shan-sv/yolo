@@ -1,127 +1,155 @@
-Explanation of Dockerization for YOLO E-commerce App
-1. Choice of Base Images
+Project Overview
 
-For our containers, we chose minimalist base images to keep the final images small and efficient:
+This project demonstrates a complete DevOps pipeline for setting up and orchestrating a containerized e-commerce platform (“YOLO E-commerce”) across two stages of automation.
 
-Frontend: node:18-alpine for building the React app and nginx:alpine to serve the production build. Alpine images are lightweight and have minimal packages installed by default.
+Stage 1 (IP2) focuses on Docker-based containerization and local orchestration.
 
-Backend: node:18-alpine was used to run the Express server. Its small size and compatibility with Node.js make it ideal for production environments.
+Stage 2 (IP3) transitions to a fully automated provisioning and configuration process using Vagrant and Ansible, achieving infrastructure-as-code (IaC) and service orchestration principles.
 
-Database: mongo:6.0 provides an official, stable MongoDB image suitable for local and production testing.
+All relevant screenshots for proof of execution are available in the screenshots/ directory for reference.
 
-Using lightweight base images ensures our containers stay below the recommended size limits while including only essential dependencies.
+Stage 1 — Docker & Local Orchestration
+Objective
 
-2. Dockerfile Directives
+To containerize and locally orchestrate the YOLO E-commerce application using Docker Compose.
 
-We structured our Dockerfiles following best practices:
+Implementation
 
-Frontend Dockerfile:
+In this stage, each major service (frontend, backend, and database) was defined as an independent microservice within the docker-compose.yml file.
+The containers were networked together using Docker’s internal bridge network to ensure seamless communication between services.
 
-WORKDIR /app – sets the working directory.
+Frontend was exposed on port 3000
 
-COPY package*.json ./ & npm ci --only=production – installs only production dependencies for a smaller build.
+Backend was exposed on port 5000
 
-COPY . . – copies source code into the container.
+Database (PostgreSQL) ran internally on port 5432
 
-RUN npm run build – builds the React app for production.
+Persistent data was achieved through Docker volumes, ensuring product data remained intact even when containers were stopped or rebuilt.
 
-FROM nginx:alpine stage – serves the built React app.
+Running the Application
 
-Backend Dockerfile:
+To launch the services, the following command was used:
 
-WORKDIR /app – sets working directory.
-
-COPY package*.json ./ & npm ci --only=production – installs backend dependencies efficiently.
-
-COPY . . – adds server files.
-
-CMD ["node", "server.js"] – runs the Express server on container start.
-
-This multi-stage build approach ensures we don’t ship unnecessary development files in the production images.
-
-3. Docker-Compose Networking
-
-We used Docker Compose to orchestrate the frontend, backend, and database containers:
-
-Containers communicate over the default bridge network created by Docker Compose.
-
-Ports mapping:
-
-Frontend: 3000 → 80 (Nginx)
-
-Backend: 5000 → 5000
-
-MongoDB: 27017 → internal only (not exposed externally for security)
-
-This allows seamless communication between containers while keeping external exposure limited.
-
-4. Docker-Compose Volumes
-
-Persistence was essential for our database:
-
-We defined a volume for MongoDB:
-
-volumes:
-  - mongo-data:/data/db
+sudo docker-compose up --build
 
 
-This ensures that all products added through the frontend persist even if containers are restarted.
+This command built all services from their respective Dockerfiles and started the entire stack in the correct dependency order.
 
-Volumes were only used where necessary to maintain a minimalist image design.
+Verification of Orchestration
 
-5. Git Workflow
+Once all services were successfully launched, the frontend became accessible at:
 
-Our workflow for this project:
-
-Branching: Created a feature branch for Dockerization.
-
-Commits: Incrementally committed Dockerfile, docker-compose, and config changes.
-
-Pull Requests: Reviewed locally, tested builds with docker compose up --build.
-
-Merge: Merged into main branch after confirming all containers run correctly.
-
-This workflow ensures reproducibility and clean version control.
-
-6. Running and Debugging
-
-Startup command:
-
-docker compose up --build
+http://localhost:3000
 
 
-Verified container connectivity:
+A screenshot of the running frontend and backend logs is available in the screenshots/ folder (frontend_running.png, backend_logs.png) showing successful orchestration of all components.
 
-Accessed frontend at http://localhost:3000
+Stage 2 — Vagrant & Ansible Automation
+Objective
 
-Verified backend at http://localhost:5000/api/products
+To extend Stage 1 by automating environment provisioning and service setup using Vagrant and Ansible. This stage showcases Infrastructure as Code (IaC) and full service orchestration capabilities.
 
-Checked database persistence via Mongo shell inside the container.
+Implementation Breakdown
 
-Debugging measures applied:
+Vagrant Provisioning
 
-Resolved Node.js crypto errors (ERR_OSSL_EVP_UNSUPPORTED) by using Node 18 Alpine and rebuilding images.
+The Vagrantfile provisions a virtual machine based on Ubuntu Focal (20.04).
 
-Ensured MongoDB hostname matched service name in Docker Compose.
+Shared folders were mounted to enable easy syncing between the host and VM.
 
-7. Image Naming and Tagging
+Once the VM was launched, Ansible was automatically provisioned to run playbooks against it.
 
-We followed clear naming and tagging standards for easy identification:
+vagrant up
 
-Frontend: leshan/yolo-client:latest
 
-Backend: leshan/yolo-backend:latest
+Ansible Configuration
 
-MongoDB: official image, versioned mongo:6.0
+The ansible/playbook.yml file handles the automation of:
 
-This allows anyone cloning the repo to pull images consistently from Docker Hub.
+Installing Docker and Docker Compose
 
-8. Screenshots
+Setting up environment variables
 
-Screenshots of images on Docker Hub, showing sizes and tags, are included to demonstrate:
+Pulling and building container images
 
-Image size compliance (frontend < 100MB, backend < 300MB)
+Running the entire application stack automatically
 
-Correct versioning and tags
+The Ansible playbook is modularized using roles, promoting reusability and clean structure:
 
-These confirm our adherence to minimalism and best practices.
+roles/docker/ — Handles Docker installation
+
+roles/backend/ — Deploys the backend container
+
+roles/frontend/ — Deploys the frontend container
+
+roles/database/ — Configures PostgreSQL and initializes data
+
+Execution Command
+
+To run the playbook manually (if needed), the following command was used:
+
+ansible-playbook -i localhost, playbook.yml -c local --ask-become-pass
+
+Verification of Orchestration
+
+The Ansible logs and backend container logs (available in the screenshots/ folder) show each step being executed — from package installation to container launch.
+Successful orchestration is confirmed when the frontend is accessible at:
+
+http://localhost:3030
+
+
+This confirms that the entire infrastructure — from VM provisioning to service deployment — is handled automatically through a single command, fulfilling the orchestration requirement.
+
+Best Practices Implemented
+
+Consistent use of variables in Ansible roles for portability and maintainability.
+
+Separation of concerns between roles (frontend, backend, and database).
+
+Infrastructure as Code principles through declarative automation.
+
+Persistent storage configuration ensuring continuity of data.
+
+All sensitive files (e.g., environment variables) were properly ignored via .gitignore for security.
+
+Reflection & Design Choices
+
+Containerization was chosen for its scalability and portability, allowing each service to run in isolation while remaining interconnected.
+
+Ansible was used to automate configuration tasks, reducing manual effort and potential for error.
+
+Vagrant provided a consistent environment for testing and deploying the application on any machine.
+
+Using roles improved maintainability, as tasks for each service were logically separated.
+
+Using variables ensured configuration flexibility across environments.
+
+Proof of Orchestration
+
+Refer to the following screenshots for visual evidence:( PRESENT IN THE PICTURES DIRECTORY)
+
+screenshots/vagrant_up.png – Successful Vagrant provisioning
+
+screenshots/ansible_execution.png – Successful playbook execution
+
+screenshots/backend_logs.png – Backend container logs showing successful startup
+
+screenshots/frontend_running.png – Application running at localhost:3030
+
+screenshots/docker_ps.png – All containers running concurrently
+
+These outputs collectively prove successful orchestration of the YOLO E-commerce system — the application runs automatically through infrastructure provisioning and configuration management tools.
+
+Conclusion
+
+Through both stages, this project demonstrates:
+
+Understanding of containerization and microservice architecture
+
+Application of automation tools (Docker, Vagrant, Ansible) for real-world DevOps workflows
+
+Use of best practices such as roles, variables, and persistent data management
+
+Successful orchestration and deployment of a multi-service application
+
+This marks a fully functional and production-ready deployment workflow illustrating the core principles of DevOps, automation, and service orchestration.

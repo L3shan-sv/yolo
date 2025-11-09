@@ -1,109 +1,169 @@
 YOLO E-Commerce Platform
+Project Overview
 
-A fully containerized e-commerce app built to demonstrate modern full-stack development and Docker-based deployment. YOLO lets users view and add products through a React frontend, with a Node.js/Express backend and MongoDB for storage. Every component is containerized to ensure consistency, portability, and persistence.
+YOLO is a fully containerized e-commerce platform that demonstrates modern DevOps practices, including:
 
+Microservice architecture (frontend, backend, database).
 
-Overview
+Containerization with Docker.
 
-YOLO is an e-commerce platform showcasing how to containerize a full-stack application. The frontend is built with React, styled with Tailwind CSS, and the backend is Node.js with Express and Mongoose connecting to MongoDB. The project demonstrates Docker best practices, including multi-stage builds, minimal images, networking, and volume persistence.
+Infrastructure provisioning and orchestration with Vagrant and Ansible.
 
-Features
+Persistent storage for product data.
 
-View products and add new products via the frontend
+Seamless setup for development and testing.
 
-Data persistence using MongoDB volumes
+This project has two stages:
 
-Multi-container setup with Docker Compose
+Stage 1 (IP2): Using Docker Compose to run containers locally.
 
-Frontend production build served by Nginx
+Stage 2 (IP3): Using Vagrant and Ansible playbooks to provision a virtual machine, orchestrate containers, and run the platform in a reproducible environment.
 
-Minimal, optimized images to reduce storage overhead
+Getting Started
+Stage 1 – Docker Compose (IP2)
 
-Tech Stack
+Navigate to the IP2 directory.
 
-Frontend: React, Tailwind CSS
+Run:
 
-Backend: Node.js, Express
-
-Database: MongoDB
-
-Containerization: Docker, Docker Compose
-
-Docker & Containerization
-Base Images
-
-Frontend: node:18-alpine (lightweight, production-ready Node.js)
-
-Backend: node:18-alpine (minimal Node.js environment)
-
-Frontend Production Server: nginx:alpine (fast, tiny image)
-
-Database: mongo:6.0 (official MongoDB image)
-
-Multi-Stage Builds
-
-Frontend uses a multi-stage build:
-
-Stage 1: Build React app with Node.js
-
-Stage 2: Serve production build with Nginx, keeping final image small (~83MB)
-
-Docker Compose
-
-Networking: Frontend, backend, and database connected on a custom bridge network
-
-Volumes: MongoDB volume ensures product data persists across container restarts
-
-Port Mapping:
-
-Frontend: 3000
-
-Backend: 5000
-
-MongoDB: 27017
-
-Running the Project
-
-Clone the repository:
-
-git clone <https://github.com/L3shan-sv/yolo.git>
-cd yolo
+sudo docker-compose up --build
 
 
-Build and start containers:
+Access the frontend at http://localhost:3000
+.
 
-docker compose up --build
+The backend runs at http://localhost:5000
+.
+
+Product data is persisted, ensuring durability across container restarts.
+
+Stage 2 – Vagrant & Ansible (IP3)
+
+Navigate to the IP3 directory:
+
+cd IP3
 
 
-Access the app:
+Start the virtual machine:
 
-Frontend: http://localhost:3000
+vagrant up
 
-Backend API: http://localhost:5000/api/products
 
-Add products via frontend and verify persistence via MongoDB volume.
+(Optional) Run the Ansible playbook manually:
 
-Screenshots
+ansible-playbook -i localhost, playbook.yml -c local --ask-become-pass
 
-(In the screenshot Directory)
 
-Docker Hub Images
-Image	Tag	Size
-leshan/yolo-client	latest	83.3MB
-leshan/yolo-backend	latest	280MB
+Access the frontend at http://localhost:3030
+.
 
-Images were optimized using Alpine base images and minimal packages to keep them lightweight.
+Backend is connected to the database with persistent storage.
 
-Implementation Notes
+All services are orchestrated via Docker, ensuring smooth communication between containers.
 
-Minimalist Approach: Using Alpine images and multi-stage builds reduced image sizes (frontend ~83MB, backend ~280MB).
+Project Structure
+IP2/
+ ├─ docker-compose.yml
+ ├─ backend/
+ ├─ frontend/
+ └─ README.md
 
-Persistence: MongoDB stores product data in a Docker volume to survive container restarts.
+IP3/
+ ├─ Vagrantfile
+ ├─ playbook.yml
+ ├─ roles/
+ │   ├─ backend/
+ │   ├─ frontend/
+ │   └─ database/
+ ├─ README.md
+ └─ explanation.md
 
-Networking: Custom bridge network ensures frontend can talk to backend and database seamlessly.
 
-Build Practices: Used npm ci --only=production for cleaner production installs.
+backend/: Node.js backend service with Express, MongoDB connection, and API routes.
 
-Git Workflow: Feature branches were used for Docker setup, merged to main after testing.
+frontend/: React frontend consuming backend APIs.
 
-Debugging: Resolved ERR_OSSL_EVP_UNSUPPORTED by using node:18-alpine and setting NODE_OPTIONS=--openssl-legacy-provider for frontend build.
+roles/: Ansible roles for each component, executed sequentially in the playbook.
+
+playbook.yml: Orchestrates container setup, service deployment, and database initialization.
+
+Demo / Expected Output
+Stage 1 – Docker Compose
+
+Run:
+
+sudo docker-compose up --build
+
+
+Expected outcomes:
+
+Containers start successfully (frontend, backend, MongoDB).
+
+Frontend accessible at http://localhost:3000
+.
+
+Backend accessible at http://localhost:5000
+.
+
+Product data persists across container restarts.
+
+Screenshots:(   IN THE PICTURES DIRECTORY)
+
+screenshots/docker_ps.png → shows all containers running.
+
+screenshots/frontend_running.png → frontend loaded successfully.
+
+screenshots/backend_logs.png → backend logs showing DB connection success.
+
+Stage 2 – Vagrant & Ansible
+
+Start VM and provision:
+
+vagrant up
+
+
+Optional manual playbook run:
+
+ansible-playbook -i localhost, playbook.yml -c local --ask-become-pass
+
+
+Expected outcomes:
+
+VM provisions successfully (screenshots/vagrant_up.png).
+
+Ansible playbook runs all roles in order, configuring Docker, backend, frontend, and database (screenshots/ansible_execution.png).
+
+Frontend accessible at http://localhost:3030
+.
+
+Backend connected to MongoDB with persistent storage.
+
+All containers running concurrently and orchestrated via Docker (screenshots/docker_ps.png).
+
+Persistence Verification
+
+Products added through the frontend remain after container restarts.
+
+Confirms proper orchestration and persistent storage.
+
+Git Workflow
+
+Minimum 10 commits describing step-by-step project evolution.
+
+Well-documented README.md and explanation.md in both stages.
+
+Clean folder structure with ignored sensitive files (e.g., Terraform state backups).
+
+Conclusion
+
+This project demonstrates:
+
+Successful containerization of microservices.
+
+Proper orchestration using Docker and Ansible.
+
+Persistent storage and connectivity between backend and database.
+
+Reproducible setups across local and VM environments.
+
+Screenshots are provided in the screenshots/ directory for reference.
