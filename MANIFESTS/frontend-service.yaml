@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: yolo-frontend-service
+spec:
+  type: LoadBalancer       # Cloud-ready: AWS will give an external IP/DNS
+  selector:
+    app: yolo-frontend
+  ports:
+    - protocol: TCP
+      port: 3000           # External port exposed via LoadBalancer
+      targetPort: 80       # Container port (Nginx)
