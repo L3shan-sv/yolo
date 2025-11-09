@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yolo-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yolo-frontend
+  template:
+    metadata:
+      labels:
+        app: yolo-frontend
+    spec:
+      containers:
+      - name: yolo-frontend
+        image: yolo-frontend-image:latest
+        imagePullPolicy: IfNotPresent  # <--- ensures local image is used
+        ports:
+        - containerPort: 3000
+        env:
+        - name: REACT_APP_BACKEND_URL
+          value: "http://yolo-backend-service:5000/api/products"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yolo-frontend-service
+spec:
+  selector:
+    app: yolo-frontend
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      nodePort: 31000 # <--- access from host browser
+  type: NodePort
