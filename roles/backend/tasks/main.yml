@@ -1,0 +1,19 @@
+- name: Build backend Docker image
+  community.docker.docker_image:
+    name: "{{ backend_image }}"
+    build:
+      path: "{{ backend_path }}"
+    source: build
+
+- name: Run backend container
+  community.docker.docker_container:
+    name: "{{ backend_container }}"
+    image: "{{ backend_image }}"
+    state: started
+    restart_policy: unless-stopped
+    networks:
+      - name: "{{ docker_network_name }}"
+    published_ports:
+      - "5000:5000"
+    env:
+      MONGO_URI: "mongodb://{{ mongodb_container }}:{{ mongodb_port }}/yolo"

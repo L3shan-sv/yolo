@@ -1,0 +1,20 @@
+---
+- name: Check if backend container is running
+  command: docker ps --filter "name={{ backend_container_name }}" --format "{{ '{{' }}.Names{{ '}}' }}"
+  register: backend_status
+  failed_when: backend_status.stdout != backend_container_name
+  changed_when: false
+  become: true
+
+- name: Check if frontend container is running
+  command: docker ps --filter "name={{ frontend_container_name }}" --format "{{ '{{' }}.Names{{ '}}' }}"
+  register: frontend_status
+  failed_when: frontend_status.stdout != frontend_container_name
+  changed_when: false
+  become: true
+
+- name: Print container verification
+  debug:
+    msg:
+      - "Backend container is running: {{ backend_status.stdout }}"
+      - "Frontend container is running: {{ frontend_status.stdout }}"
