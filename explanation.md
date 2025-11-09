@@ -1,155 +1,179 @@
-Project Overview
+explanation.md – YOLO E-Commerce Platform (IP4 Update)
+# YOLO E-Commerce Platform – Project Evolution
 
-This project demonstrates a complete DevOps pipeline for setting up and orchestrating a containerized e-commerce platform (“YOLO E-commerce”) across two stages of automation.
+This document explains the evolution of the YOLO E-Commerce Platform from IP2 through IP4, highlighting architectural changes, deployment strategies, and configuration updates.
 
-Stage 1 (IP2) focuses on Docker-based containerization and local orchestration.
+---
 
-Stage 2 (IP3) transitions to a fully automated provisioning and configuration process using Vagrant and Ansible, achieving infrastructure-as-code (IaC) and service orchestration principles.
+## Stage 1 – IP2: Docker Compose (Local Containers)
 
-All relevant screenshots for proof of execution are available in the screenshots/ directory for reference.
+**Objective:** Run all services locally using Docker Compose for development and testing.
 
-Stage 1 — Docker & Local Orchestration
-Objective
+- **Backend:** Node.js with Express connected to MongoDB.
+- **Frontend:** React consuming backend APIs.
+- **Database:** MongoDB container with persistent storage.
 
-To containerize and locally orchestrate the YOLO E-commerce application using Docker Compose.
+**Workflow:**
 
-Implementation
+1. Navigate to project root.
+2. Run:
 
-In this stage, each major service (frontend, backend, and database) was defined as an independent microservice within the docker-compose.yml file.
-The containers were networked together using Docker’s internal bridge network to ensure seamless communication between services.
-
-Frontend was exposed on port 3000
-
-Backend was exposed on port 5000
-
-Database (PostgreSQL) ran internally on port 5432
-
-Persistent data was achieved through Docker volumes, ensuring product data remained intact even when containers were stopped or rebuilt.
-
-Running the Application
-
-To launch the services, the following command was used:
-
+```bash
 sudo docker-compose up --build
 
 
-This command built all services from their respective Dockerfiles and started the entire stack in the correct dependency order.
+Verify services:
 
-Verification of Orchestration
+Frontend: http://localhost:3000
 
-Once all services were successfully launched, the frontend became accessible at:
+Backend: http://localhost:5000
 
-http://localhost:3000
+Observations:
 
+Containers started successfully.
 
-A screenshot of the running frontend and backend logs is available in the screenshots/ folder (frontend_running.png, backend_logs.png) showing successful orchestration of all components.
+Product data persisted across container restarts.
 
-Stage 2 — Vagrant & Ansible Automation
-Objective
+API URLs were local (localhost:5000) for frontend consumption.
 
-To extend Stage 1 by automating environment provisioning and service setup using Vagrant and Ansible. This stage showcases Infrastructure as Code (IaC) and full service orchestration capabilities.
+Stage 2 – IP3: Vagrant + Ansible (VM Provisioning)
 
-Implementation Breakdown
+Objective: Move platform to a reproducible VM environment with orchestration.
 
-Vagrant Provisioning
+Provisioned a VM using Vagrant.
 
-The Vagrantfile provisions a virtual machine based on Ubuntu Focal (20.04).
+Automated backend, frontend, and MongoDB setup with Ansible roles.
 
-Shared folders were mounted to enable easy syncing between the host and VM.
+Ensured persistent storage for database volumes.
 
-Once the VM was launched, Ansible was automatically provisioned to run playbooks against it.
+Workflow:
+
+Navigate to roles/.
+
+Start VM:
 
 vagrant up
 
 
-Ansible Configuration
-
-The ansible/playbook.yml file handles the automation of:
-
-Installing Docker and Docker Compose
-
-Setting up environment variables
-
-Pulling and building container images
-
-Running the entire application stack automatically
-
-The Ansible playbook is modularized using roles, promoting reusability and clean structure:
-
-roles/docker/ — Handles Docker installation
-
-roles/backend/ — Deploys the backend container
-
-roles/frontend/ — Deploys the frontend container
-
-roles/database/ — Configures PostgreSQL and initializes data
-
-Execution Command
-
-To run the playbook manually (if needed), the following command was used:
+Run playbook (optional):
 
 ansible-playbook -i localhost, playbook.yml -c local --ask-become-pass
 
-Verification of Orchestration
 
-The Ansible logs and backend container logs (available in the screenshots/ folder) show each step being executed — from package installation to container launch.
-Successful orchestration is confirmed when the frontend is accessible at:
+Access services:
 
-http://localhost:3030
+Frontend: http://localhost:3030
+
+Backend connected to MongoDB
+
+Key Updates:
+
+Frontend URLs updated in ProductControl.js to point to VM backend.
+
+All containers orchestrated via Ansible roles.
+
+Verified persistence of products added via frontend.
+
+Stage 3 – IP4: Kubernetes Deployment
+
+Objective: Deploy the platform on a Kubernetes cluster (Minikube or EKS) for scalable, containerized orchestration.
+
+Steps:
+
+Start cluster:
+
+Minikube:
+
+minikube start --cpus=4 --memory=8192
+minikube status
 
 
-This confirms that the entire infrastructure — from VM provisioning to service deployment — is handled automatically through a single command, fulfilling the orchestration requirement.
+AWS EKS:
 
-Best Practices Implemented
+eksctl create cluster --name yolo-cluster --region ap-southeast-2
+aws eks update-kubeconfig --name yolo-cluster --region ap-southeast-2
 
-Consistent use of variables in Ansible roles for portability and maintainability.
 
-Separation of concerns between roles (frontend, backend, and database).
+Apply manifests:
 
-Infrastructure as Code principles through declarative automation.
+kubectl apply -f manifests/
 
-Persistent storage configuration ensuring continuity of data.
 
-All sensitive files (e.g., environment variables) were properly ignored via .gitignore for security.
+Verify pods and services:
 
-Reflection & Design Choices
+kubectl get pods -o wide
+kubectl get svc
+kubectl logs <pod-name>
 
-Containerization was chosen for its scalability and portability, allowing each service to run in isolation while remaining interconnected.
 
-Ansible was used to automate configuration tasks, reducing manual effort and potential for error.
+Port-forward for local access:
 
-Vagrant provided a consistent environment for testing and deploying the application on any machine.
+kubectl port-forward svc/yolo-backend-service 5000:5000
+kubectl port-forward svc/yolo-frontend-service 3000:3000
 
-Using roles improved maintainability, as tasks for each service were logically separated.
 
-Using variables ensured configuration flexibility across environments.
+Frontend: http://localhost:3000
 
-Proof of Orchestration
+Backend: http://localhost:5000
 
-Refer to the following screenshots for visual evidence:( PRESENT IN THE PICTURES DIRECTORY)
+Key Updates in IP4:
 
-screenshots/vagrant_up.png – Successful Vagrant provisioning
+Kubernetes manifests created for all services (backend, frontend, mongo).
 
-screenshots/ansible_execution.png – Successful playbook execution
+Frontend URLs updated to consume yolo-backend-service inside the cluster.
 
-screenshots/backend_logs.png – Backend container logs showing successful startup
+MongoDB configured as a StatefulSet with persistent volumes.
 
-screenshots/frontend_running.png – Application running at localhost:3030
+Testing workflow verified by adding products and ensuring persistence after pod restarts.
 
-screenshots/docker_ps.png – All containers running concurrently
+Minikube/EKS used to simulate production-like environment.
 
-These outputs collectively prove successful orchestration of the YOLO E-commerce system — the application runs automatically through infrastructure provisioning and configuration management tools.
+Testing & Verification
+
+Verified all pods reach Running status.
+
+Confirmed backend logs show successful DB connections.
+
+Frontend correctly communicates with backend service via cluster DNS.
+
+Persistence verified: products added via frontend remain after pod restarts.
+
+Optional: kubectl describe pod <pod> and kubectl get events used for troubleshooting.
+
+Deployment & Live Links
+
+Deployment Strategy:
+
+Local testing: Minikube
+
+Cloud testing: AWS EKS
+
+Persistent storage: Volume mounts for MongoDB StatefulSet
+
+Orchestration: Kubernetes manifests and service definitions
+
+Live Access:
+
+Frontend: [INSERT DEPLOYED FRONTEND URL HERE]
+
+Backend: [INSERT DEPLOYED BACKEND URL HERE]
 
 Conclusion
 
-Through both stages, this project demonstrates:
+The YOLO E-Commerce Platform evolved as follows:
 
-Understanding of containerization and microservice architecture
+IP2: Quick local testing with Docker Compose.
 
-Application of automation tools (Docker, Vagrant, Ansible) for real-world DevOps workflows
+IP3: Reproducible VM deployment with Ansible orchestration.
 
-Use of best practices such as roles, variables, and persistent data management
+IP4: Kubernetes deployment with full container orchestration, persistent storage, and scalable services.
 
-Successful orchestration and deployment of a multi-service application
+All stages ensure:
 
-This marks a fully functional and production-ready deployment workflow illustrating the core principles of DevOps, automation, and service orchestration.
+Microservices communicate seamlessly.
+
+Data persistence is maintained.
+
+Platform is reproducible across environments.
+
+Frontend URLs correctly point to backend services in respective environments.
