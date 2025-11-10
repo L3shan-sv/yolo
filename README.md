@@ -22,7 +22,7 @@ This repository demonstrates a Kubernetes deployment of a full-stack application
 1. Live Frontend (Demo)
 
 Start with the live frontend link (IPv4/ELB) for immediate access:
-Frontend Demo - ttps://ad1b1ecb1beeb4d6d821b684ba38a294-652242024.ap-southeast-2.elb.amazonaws.com/
+Frontend Demo - ttps://ad1b1ecb1beeb4d6d821b684ba38a294-652242024.ap-southeast-2.elb.amazonaws.com/( ALTHOUGH IT MAY SHOW HARD TO ACCES THE SITE ACCES KINDLY VISI THE PICTURES DIRECTORY WHICH CONTAINS THE SERICES RUNNING WITH EVEN PRODUCTS ADDED TO SHOW IT INDEED WORKS )
 
 ⚠️ Note: This link is a deployed endpoint. Backend and database functionality may be limited in this demo.
 
